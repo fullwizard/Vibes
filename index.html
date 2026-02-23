@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/x-icon" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Noto+Color+Emoji&family=Tilt+Neon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometric Chaos Generator</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
+            --theme-color: #00d2ff;
             --panel-bg: rgba(255, 255, 255, 0.1);
             --accent: #00d2ff;
             --text: #ffffff;
@@ -19,7 +25,7 @@
             height: 100%;
             overflow: hidden;
             background-color: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: "Tilt Neon", sans-serif;
             color: var(--text);
         }
 
@@ -42,9 +48,21 @@
             z-index: 10;
         }
 
-        h2 { margin-top: 0; font-size: 1.2rem; color: var(--accent); }
+        h2 { margin-top: 0; font-size: 1.2rem; color: var(--theme-color); }
 
-        .group { margin-bottom: 15px; }
+        .group { 
+            margin-bottom: 20px;   /* Space between the groups themselves */
+            display: flex;         /* Turns on the layout engine */
+            flex-direction: column; /* Stacks everything (label, slider 1, slider 2) vertically */
+            gap: 10px;             /* Adds a consistent 10px gap between EVERY item inside the group */
+        }
+
+        /* We can remove the margin-bottom from the label now because 'gap' handles it! */
+        label { 
+            display: block; 
+            font-size: 0.85rem; 
+            color: white;
+}
         label { display: block; font-size: 0.85rem; margin-bottom: 5px; }
 
         /* Custom Sliders */
@@ -66,11 +84,53 @@
             height: 16px;
             width: 16px;
             border-radius: 50%;
-            background: var(--accent);
+            background: var(--theme-color);
             cursor: pointer;
             margin-top: -5px;
         }
+        /* 1. Reset the checkbox */
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 0;
+    font: inherit;
+    color: var(--theme-color);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--theme-color);
+    border-radius: 4px;
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
 
+input[type="checkbox"]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    transform: scale(0);
+    box-shadow: inset 1em 1em var(--theme-color);
+    background-color: CanvasText;
+}
+
+input[type="checkbox"]:checked {
+    background-color: rgba(0, 210, 255, 0.2);
+}
+
+input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+/* 4. Align with labels */
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between box and text */
+    cursor: pointer;
+    font-family: 'Tilt Neon', sans-serif;
+}
         /* Checkbox Styling */
         .checkbox-group {
             display: flex;
@@ -89,11 +149,12 @@
             padding: 10px;
             border: none;
             border-radius: 5px;
-            background: var(--accent);
+            background: var(--theme-color);
             color: white;
             font-weight: bold;
             cursor: pointer;
             transition: opacity 0.2s;
+            font-family: inherit;
         }
 
         button:hover { opacity: 0.8; }
@@ -102,7 +163,7 @@
 <body>
 
 <div id="controls">
-    <h2>Shape Settings</h2>
+    <h2 style = "font-family: 'Bungee Inline', sans-serif">Generator Settings</h2>
     
     <div class="group">
         <label>Shapes</label>
@@ -130,8 +191,10 @@
         <input type="range" id="minSize" min="5" max="50" value="10">
         <input type="range" id="maxSize" min="51" max="200" value="100">
     </div>
-
-    <button id="clearBtn">Clear Canvas</button>
+    <div class="group">
+        <button id="clearBtn">Clear Canvas</button>
+        <button id="pauseBtn">Pause Generator</button>
+    </div>
 </div>
 
 <canvas id="canvas"></canvas>
@@ -140,6 +203,8 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const clearBtn = document.getElementById('clearBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    let play = true;
 
     // UI Elements
     const inputs = {
@@ -152,6 +217,7 @@
         variation: document.getElementById('variation'),
         min: document.getElementById('minSize'),
         max: document.getElementById('maxSize')
+        
     };
 
     function resize() {
@@ -163,11 +229,14 @@
     resize();
 
     function getRandomColor() {
+        const newColor = "rgb("+inputs.r.value + "," + inputs.g.value + ","+ inputs.b.value + ")"; 
+        document.documentElement.style.setProperty('--theme-color', newColor);
         const v = parseInt(inputs.variation.value);
         const r = Math.max(0, Math.min(255, parseInt(inputs.r.value) + (Math.random() * v * 2 - v)));
         const g = Math.max(0, Math.min(255, parseInt(inputs.g.value) + (Math.random() * v * 2 - v)));
         const b = Math.max(0, Math.min(255, parseInt(inputs.b.value) + (Math.random() * v * 2 - v)));
         const a = Math.random() * 0.5 + 0.1; // Random opacity
+        
         return `rgba(${r}, ${g}, ${b}, ${a})`;
     }
 
@@ -204,13 +273,22 @@
     // Animation Loop
     function animate() {
         // Draw 2 shapes per frame for a nice filling effect
-        drawRandomShape();
-        drawRandomShape();
-        requestAnimationFrame(animate);
+        if (play){
+            drawRandomShape();
+            drawRandomShape();
+            requestAnimationFrame(animate); 
+        }
     }
 
     clearBtn.addEventListener('click', () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+    pauseBtn.addEventListener('click', () => {
+        play = !play;
+        pauseBtn.innerText = play ? "Pause Generator" : "Resume Generator";
+        if (play) {
+            animate();
+        }
     });
 
     animate();
