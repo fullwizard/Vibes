@@ -4,7 +4,6 @@
     <link rel="icon" type="image/x-icon" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Noto+Color+Emoji&family=Tilt+Neon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,24 +45,58 @@
             border-radius: 15px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             z-index: 10;
+            transition: all 0.3s ease;
         }
 
-        h2 { margin-top: 0; font-size: 1.2rem; color: var(--theme-color); }
+        /* Minimize state: Everything vanishes except the button */
+        #controls.minimized {
+            background: transparent;
+            backdrop-filter: blur(0px);
+            border-color: transparent;
+            box-shadow: none;
+            width: 30px;
+            height: 30px;
+        }
+
+        #controls.minimized > *:not(#minBtn) {
+            display: none;
+        }
+
+        #minBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--panel-bg);
+            border: 1px solid var(--theme-color);
+            border-radius: 4px;
+            color: var(--theme-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Adjust button position when floating */
+        #controls.minimized #minBtn {
+            top: 0;
+            right: 0;
+        }
+
+        h2 { margin-top: 0; font-size: 1.2rem; color: var(--theme-color); padding-right: 30px; }
 
         .group { 
-            margin-bottom: 20px;   /* Space between the groups themselves */
-            display: flex;         /* Turns on the layout engine */
-            flex-direction: column; /* Stacks everything (label, slider 1, slider 2) vertically */
-            gap: 10px;             /* Adds a consistent 10px gap between EVERY item inside the group */
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        /* We can remove the margin-bottom from the label now because 'gap' handles it! */
-        label { 
-            display: block; 
-            font-size: 0.85rem; 
-            color: white;
-}
-        label { display: block; font-size: 0.85rem; margin-bottom: 5px; }
+        label { display: block; font-size: 0.85rem; color: white; margin-bottom: 5px; }
 
         /* Custom Sliders */
         input[type=range] {
@@ -88,50 +121,37 @@
             cursor: pointer;
             margin-top: -5px;
         }
-        /* 1. Reset the checkbox */
-input[type="checkbox"] {
-    -webkit-appearance: none;
-    appearance: none;
-    background-color: rgba(255, 255, 255, 0.1);
-    margin: 0;
-    font: inherit;
-    color: var(--theme-color);
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--theme-color);
-    border-radius: 4px;
-    display: grid;
-    place-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
 
-input[type="checkbox"]::before {
-    content: "";
-    width: 10px;
-    height: 10px;
-    transform: scale(0);
-    box-shadow: inset 1em 1em var(--theme-color);
-    background-color: CanvasText;
-}
+        /* Custom Checkboxes */
+        input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 0;
+            font: inherit;
+            color: var(--theme-color);
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--theme-color);
+            border-radius: 4px;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
 
-input[type="checkbox"]:checked {
-    background-color: rgba(0, 210, 255, 0.2);
-}
+        input[type="checkbox"]::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            transform: scale(0);
+            box-shadow: inset 1em 1em var(--theme-color);
+        }
 
-input[type="checkbox"]:checked::before {
-    transform: scale(1);
-}
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
 
-/* 4. Align with labels */
-.checkbox-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between box and text */
-    cursor: pointer;
-    font-family: 'Tilt Neon', sans-serif;
-}
-        /* Checkbox Styling */
         .checkbox-group {
             display: flex;
             gap: 10px;
@@ -141,6 +161,7 @@ input[type="checkbox"]:checked::before {
         .checkbox-group label {
             display: flex;
             align-items: center;
+            gap: 8px;
             cursor: pointer;
         }
 
@@ -163,7 +184,8 @@ input[type="checkbox"]:checked::before {
 <body>
 
 <div id="controls">
-    <h2 style = "font-family: 'Bungee Inline', sans-serif">Generator Settings</h2>
+    <button id="minBtn">-</button>
+    <h2 style="font-family: 'Bungee Inline', sans-serif">Generator Settings</h2>
     
     <div class="group">
         <label>Shapes</label>
@@ -191,9 +213,16 @@ input[type="checkbox"]:checked::before {
         <input type="range" id="minSize" min="5" max="50" value="10">
         <input type="range" id="maxSize" min="51" max="200" value="100">
     </div>
+
+    <div class="group">
+        <label>Generation Speed</label>
+        <input type="range" id="speed" min="1" max="20" value="2">
+    </div>
+
     <div class="group">
         <button id="clearBtn">Clear Canvas</button>
         <button id="pauseBtn">Pause Generator</button>
+        <button id="screenshotBtn">Take Screenshot</button>
     </div>
 </div>
 
@@ -202,11 +231,13 @@ input[type="checkbox"]:checked::before {
 <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const controls = document.getElementById('controls');
+    const minBtn = document.getElementById('minBtn');
     const clearBtn = document.getElementById('clearBtn');
     const pauseBtn = document.getElementById('pauseBtn');
+    const screenshotBtn = document.getElementById('screenshotBtn');
     let play = true;
 
-    // UI Elements
     const inputs = {
         rect: document.getElementById('rect'),
         circle: document.getElementById('circle'),
@@ -216,26 +247,40 @@ input[type="checkbox"]:checked::before {
         b: document.getElementById('blue'),
         variation: document.getElementById('variation'),
         min: document.getElementById('minSize'),
-        max: document.getElementById('maxSize')
-        
+        max: document.getElementById('maxSize'),
+        speed: document.getElementById('speed')
     };
 
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        fillBackground();
+    }
+
+    function fillBackground() {
+        const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     window.addEventListener('resize', resize);
     resize();
 
+    // Minimize Toggle Logic
+    minBtn.addEventListener('click', () => {
+        controls.classList.toggle('minimized');
+        minBtn.innerText = controls.classList.contains('minimized') ? "+" : "-";
+    });
+
     function getRandomColor() {
-        const newColor = "rgb("+inputs.r.value + "," + inputs.g.value + ","+ inputs.b.value + ")"; 
+        const newColor = `rgb(${inputs.r.value}, ${inputs.g.value}, ${inputs.b.value})`; 
         document.documentElement.style.setProperty('--theme-color', newColor);
+        
         const v = parseInt(inputs.variation.value);
         const r = Math.max(0, Math.min(255, parseInt(inputs.r.value) + (Math.random() * v * 2 - v)));
         const g = Math.max(0, Math.min(255, parseInt(inputs.g.value) + (Math.random() * v * 2 - v)));
         const b = Math.max(0, Math.min(255, parseInt(inputs.b.value) + (Math.random() * v * 2 - v)));
-        const a = Math.random() * 0.5 + 0.1; // Random opacity
+        const a = Math.random() * 0.5 + 0.1; 
         
         return `rgba(${r}, ${g}, ${b}, ${a})`;
     }
@@ -270,25 +315,40 @@ input[type="checkbox"]:checked::before {
         }
     }
 
-    // Animation Loop
     function animate() {
-        // Draw 2 shapes per frame for a nice filling effect
         if (play){
-            drawRandomShape();
-            drawRandomShape();
+            // Use the speed slider to determine how many shapes to draw per frame
+            const iterations = parseInt(inputs.speed.value);
+            for(let i = 0; i < iterations; i++) {
+                drawRandomShape();
+            }
             requestAnimationFrame(animate); 
         }
     }
 
     clearBtn.addEventListener('click', () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        fillBackground();
     });
+
     pauseBtn.addEventListener('click', () => {
         play = !play;
         pauseBtn.innerText = play ? "Pause Generator" : "Resume Generator";
-        if (play) {
-            animate();
-        }
+        if (play) animate();
+    });
+
+    screenshotBtn.addEventListener('click', () => {
+        const currentDisplay = controls.style.display;
+        controls.style.display = 'none';
+
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.download = `generator-output-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            controls.style.display = currentDisplay || 'block';
+        }, 50);
     });
 
     animate();
