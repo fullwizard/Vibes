@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Chaos Generator</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --panel-bg: rgba(255, 255, 255, 0.1);
+            --accent: #00d2ff;
+            --text: #ffffff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* Control Panel Styling */
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 280px;
+            padding: 20px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            z-index: 10;
+        }
+
+        h2 { margin-top: 0; font-size: 1.2rem; color: var(--accent); }
+
+        .group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; margin-bottom: 5px; }
+
+        /* Custom Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -5px;
+        }
+
+        /* Checkbox Styling */
+        .checkbox-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: var(--accent);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div id="controls">
+    <h2>Shape Settings</h2>
+    
+    <div class="group">
+        <label>Shapes</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="rect" checked> Rect</label>
+            <label><input type="checkbox" id="circle" checked> Circle</label>
+            <label><input type="checkbox" id="triangle"> Tri</label>
+        </div>
+    </div>
+
+    <div class="group">
+        <label>Base Color (R, G, B)</label>
+        <input type="range" id="red" min="0" max="255" value="100">
+        <input type="range" id="green" min="0" max="255" value="150">
+        <input type="range" id="blue" min="0" max="255" value="255">
+    </div>
+
+    <div class="group">
+        <label>Color Variation</label>
+        <input type="range" id="variation" min="0" max="255" value="50">
+    </div>
+
+    <div class="group">
+        <label>Size (Min - Max)</label>
+        <input type="range" id="minSize" min="5" max="50" value="10">
+        <input type="range" id="maxSize" min="51" max="200" value="100">
+    </div>
+
+    <button id="clearBtn">Clear Canvas</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // UI Elements
+    const inputs = {
+        rect: document.getElementById('rect'),
+        circle: document.getElementById('circle'),
+        triangle: document.getElementById('triangle'),
+        r: document.getElementById('red'),
+        g: document.getElementById('green'),
+        b: document.getElementById('blue'),
+        variation: document.getElementById('variation'),
+        min: document.getElementById('minSize'),
+        max: document.getElementById('maxSize')
+    };
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    function getRandomColor() {
+        const v = parseInt(inputs.variation.value);
+        const r = Math.max(0, Math.min(255, parseInt(inputs.r.value) + (Math.random() * v * 2 - v)));
+        const g = Math.max(0, Math.min(255, parseInt(inputs.g.value) + (Math.random() * v * 2 - v)));
+        const b = Math.max(0, Math.min(255, parseInt(inputs.b.value) + (Math.random() * v * 2 - v)));
+        const a = Math.random() * 0.5 + 0.1; // Random opacity
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+
+    function drawRandomShape() {
+        const activeShapes = [];
+        if (inputs.rect.checked) activeShapes.push('rect');
+        if (inputs.circle.checked) activeShapes.push('circle');
+        if (inputs.triangle.checked) activeShapes.push('triangle');
+
+        if (activeShapes.length === 0) return;
+
+        const shape = activeShapes[Math.floor(Math.random() * activeShapes.length)];
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const size = Math.random() * (parseInt(inputs.max.value) - parseInt(inputs.min.value)) + parseInt(inputs.min.value);
+        
+        ctx.fillStyle = getRandomColor();
+        ctx.beginPath();
+
+        if (shape === 'rect') {
+            ctx.fillRect(x, y, size, size);
+        } else if (shape === 'circle') {
+            ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (shape === 'triangle') {
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + size, y);
+            ctx.lineTo(x + size / 2, y - size);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+
+    // Animation Loop
+    function animate() {
+        // Draw 2 shapes per frame for a nice filling effect
+        drawRandomShape();
+        drawRandomShape();
+        requestAnimationFrame(animate);
+    }
+
+    clearBtn.addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    animate();
+</script>
+
+</body>
+</html>
